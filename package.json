@@ -1,0 +1,11 @@
+{
+  "name": "mom-pop-ticketing",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0"
+  }
+}
