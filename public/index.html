@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticketing System</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticketing System</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Ticketing System</h1>
+<h1>Ticketing System</h1>
 
-  <!-- Login Section -->
-  <div id="loginSection">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
+<!-- Login Section -->
+<div id="loginSection">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <button id="signupBtn">Sign Up</button>
+</div>
+
+<!-- Dashboard Section -->
+<div id="dashboard" style="display:none;">
+  <h2 id="roleTitle"></h2>
+
+  <!-- Customer Ticket Form -->
+  <div id="customerSection" style="display:none;">
+    <form id="ticketForm">
+      <input type="text" id="title" placeholder="Title" required>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button type="submit">Submit Ticket</button>
+    </form>
   </div>
 
-  <!-- Dashboard Section -->
-  <div id="dashboard" style="display:none;">
-    <h2 id="roleTitle"></h2>
+  <!-- Tickets List -->
+  <h2>Your Tickets</h2>
+  <div id="tickets"></div>
+</div>
 
-    <!-- Customer Ticket Form -->
-    <div id="customerSection" style="display:none;">
-      <form id="ticketForm">
-        <input type="text" id="title" placeholder="Title" required>
-        <textarea id="description" placeholder="Description" required></textarea>
-        <button type="submit">Submit Ticket</button>
-      </form>
-    </div>
-
-    <!-- Tickets List -->
-    <h2>Your Tickets</h2>
-    <div id="tickets"></div>
-  </div>
-
-  <script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
