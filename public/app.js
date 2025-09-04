@@ -1,13 +1,8 @@
-// ----- Firebase Config -----
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID"
-};
+// ----- Supabase Client -----
+const SUPABASE_URL = "https://jorkdpleywwwmksnirwn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU";
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ----- Elements -----
 const loginSection = document.getElementById('loginSection');
@@ -28,21 +23,30 @@ signupBtn.addEventListener('click', async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
   if(!email || !password) return alert("Enter email & password");
-  const userCred = await auth.createUserWithEmailAndPassword(email, password);
-  const uid = userCred.user.uid;
-  await db.collection('users').doc(uid).set({ role: 'customer', email });
-  emailInput.value = passwordInput.value = '';
+
+  const { user, error } = await supabase.auth.signUp({ email, password });
+
+  if(error) return alert(error.message);
+
+  // Create user profile in Supabase table
+  await supabase.from('users').insert([{ id: user.id, email: user.email, role: 'customer' }]);
   alert("Sign up complete! Log in.");
+  emailInput.value = passwordInput.value = '';
 });
 
 // ----- Login -----
 loginBtn.addEventListener('click', async () => {
   const email = emailInput.value;
   const password = passwordInput.value;
-  const userCred = await auth.signInWithEmailAndPassword(email, password);
-  currentUser = userCred.user;
-  const doc = await db.collection('users').doc(currentUser.uid).get();
-  const role = doc.data().role || 'customer';
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return alert(error.message);
+
+  currentUser = data.user;
+
+  // Fetch role from users table
+  const { data: userProfile } = await supabase.from('users').select('role').eq('id', currentUser.id).single();
+  const role = userProfile?.role || 'customer';
   showDashboard(role);
 });
 
@@ -60,20 +64,17 @@ ticketForm?.addEventListener('submit', async e => {
   e.preventDefault();
   const title = document.getElementById('title').value;
   const description = document.getElementById('description').value;
-
-  // Auto-generate ticket number
   const ticketNumber = `TCK-${Date.now()}`;
 
-  await db.collection('tickets').add({
-    title, 
-    description, 
-    ticketNumber, 
-    status: 'open', 
-    createdBy: currentUser.uid, 
-    assignedTo: null,
-    comments: [],
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  await supabase.from('tickets').insert([{
+    title,
+    description,
+    ticket_number: ticketNumber,
+    status: 'open',
+    created_by: currentUser.id,
+    assigned_to: null,
+    comments: []
+  }]);
 
   ticketForm.reset();
   renderTickets('customer');
@@ -82,18 +83,23 @@ ticketForm?.addEventListener('submit', async e => {
 // ----- Render Tickets -----
 async function renderTickets(role) {
   ticketsDiv.innerHTML = '';
-  let query = db.collection('tickets').orderBy('createdAt', 'desc');
-  if(role === 'customer') query = query.where('createdBy', '==', currentUser.uid);
-  const snapshot = await query.get();
-  snapshot.forEach(doc => {
-    const t = doc.data();
+  let query = supabase.from('tickets').select('*').order('created_at', { ascending: false });
+
+  if(role === 'customer') {
+    query = query.eq('created_by', currentUser.id);
+  }
+
+  const { data: tickets, error } = await query;
+  if(error) return console.error(error);
+
+  tickets.forEach(t => {
     ticketsDiv.innerHTML += `
       <div class="ticket">
-        <strong>${t.ticketNumber}: ${t.title}</strong><br>
+        <strong>${t.ticket_number}: ${t.title}</strong><br>
         Status: ${t.status}<br>
-        Assigned: ${t.assignedTo || 'None'}<br>
+        Assigned: ${t.assigned_to || 'None'}<br>
         Description: ${t.description}<br>
-        Comments: ${t.comments.join(", ")}
+        Comments: ${(t.comments || []).join(", ")}
       </div>
     `;
   });
