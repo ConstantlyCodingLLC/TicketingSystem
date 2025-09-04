@@ -1,55 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticketing System</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supabase Ticketing System</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Ticketing System</h1>
 
-  <!-- Login Section -->
-  <div id="loginSection">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
+<h1>Ticketing System</h1>
+
+<div id="loginSection">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <button id="signupBtn">Sign Up</button>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <h2 id="roleTitle"></h2>
+
+  <div id="customerSection" style="display:none;">
+    <h3>Submit a Ticket</h3>
+    <form id="ticketForm">
+      <input type="text" id="title" placeholder="Title" required>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button type="submit">Submit Ticket</button>
+    </form>
   </div>
 
-  <!-- Dashboard Section -->
-  <div id="dashboard" style="display:none;">
-    <h2 id="roleTitle"></h2>
-
-    <!-- Customer Ticket Form -->
-    <div id="customerSection" style="display:none;">
-      <h3>Submit a Ticket</h3>
-      <form id="ticketForm">
-        <input type="text" id="title" placeholder="Title" required>
-        <textarea id="description" placeholder="Description" required></textarea>
-        <button type="submit">Submit Ticket</button>
-      </form>
-    </div>
-
-    <!-- Business Owner Section -->
-    <div id="ownerSection" style="display:none;">
-      <h3>Manage Tickets</h3>
-      <div id="ownerTickets"></div>
-    </div>
-
-    <!-- Admin Section -->
-    <div id="adminSection" style="display:none;">
-      <h3>Admin Controls</h3>
-      <div id="adminTickets"></div>
-      <h4>Manage User Roles</h4>
-      <div id="usersList"></div>
-    </div>
-
-    <h2>Your Tickets</h2>
-    <div id="tickets"></div>
+  <div id="ownerSection" style="display:none;">
+    <h3>Business Owner Tickets</h3>
+    <div id="ownerTickets"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/dist/supabase.min.js"></script>
-  <script src="app.js" type="module"></script>
+  <div id="adminSection" style="display:none;">
+    <h3>Admin Controls</h3>
+    <h4>All Tickets</h4>
+    <div id="adminTickets"></div>
+    <h4>Manage Users</h4>
+    <div id="usersList"></div>
+  </div>
+
+  <h3>All Tickets / Your Tickets</h3>
+  <div id="tickets"></div>
+</div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
