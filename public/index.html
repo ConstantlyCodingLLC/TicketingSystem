@@ -3,20 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Portal</title>
+  <title>Ticketing System</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <h1>Customer Ticket Portal</h1>
+  <h1>Ticketing System</h1>
 
-  <form id="ticketForm">
-    <input type="text" id="title" placeholder="Title" required>
-    <textarea id="description" placeholder="Description" required></textarea>
-    <button type="submit">Submit Ticket</button>
-  </form>
+  <!-- Login Section -->
+  <div id="loginSection">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Sign Up</button>
+  </div>
 
-  <h2>Your Tickets</h2>
-  <div id="tickets"></div>
+  <!-- Dashboard Section -->
+  <div id="dashboard" style="display:none;">
+    <h2 id="roleTitle"></h2>
+
+    <!-- Customer Ticket Form -->
+    <div id="customerSection" style="display:none;">
+      <form id="ticketForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <button type="submit">Submit Ticket</button>
+      </form>
+    </div>
+
+    <!-- Tickets List (for both customer & staff) -->
+    <h2>Your Tickets</h2>
+    <div id="tickets"></div>
+  </div>
 
   <script src="app.js"></script>
 </body>
