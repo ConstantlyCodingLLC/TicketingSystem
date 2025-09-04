@@ -1,99 +1,147 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/dist/supabase.min.js';
 
-// ----- Supabase Config -----
-const SUPABASE_URL = 'https://jorkdpleywwwmksnirwn.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU'
+const supabaseUrl = "https://jorkdpleywwwmksnirwn.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Elements
+const loginSection = document.getElementById('loginSection');
+const dashboard = document.getElementById('dashboard');
+const roleTitle = document.getElementById('roleTitle');
+const customerSection = document.getElementById('customerSection');
+const ownerSection = document.getElementById('ownerSection');
+const adminSection = document.getElementById('adminSection');
+const ticketForm = document.getElementById('ticketForm');
+const ticketsDiv = document.getElementById('tickets');
+const ownerTicketsDiv = document.getElementById('ownerTickets');
+const adminTicketsDiv = document.getElementById('adminTickets');
+const usersListDiv = document.getElementById('usersList');
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
 
-// ----- Elements -----
-const loginSection = document.getElementById('loginSection')
-const dashboard = document.getElementById('dashboard')
-const roleTitle = document.getElementById('roleTitle')
-const customerSection = document.getElementById('customerSection')
-const ticketForm = document.getElementById('ticketForm')
-const ticketsDiv = document.getElementById('tickets')
-const loginBtn = document.getElementById('loginBtn')
-const signupBtn = document.getElementById('signupBtn')
-const emailInput = document.getElementById('email')
-const passwordInput = document.getElementById('password')
+let currentUser = null;
+let currentRole = null;
 
-let currentUser = null
-let currentRole = 'customer'
-
-// ----- Signup -----
+// ---- Sign Up ----
 signupBtn.addEventListener('click', async () => {
-  const email = emailInput.value
-  const password = passwordInput.value
-  if (!email || !password) return alert("Enter email & password")
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  if(!email || !password) return alert("Enter email & password");
 
-  const { data: { user }, error } = await supabase.auth.signUp({ email, password })
-  if (error) return alert(error.message)
+  const { user, error } = await supabase.auth.signUp({ email, password });
+  if(error) return alert(error.message);
 
-  await supabase.from('users').insert([{ id: user.id, email, role:'customer' }])
-  alert('Sign up successful! Log in.')
-})
+  currentUser = user;
 
-// ----- Login -----
+  // Add default role: customer
+  await supabase.from('users').insert([{ id: user.id, email, role: 'customer' }]);
+  alert("Sign up complete! Log in.");
+});
+
+// ---- Login ----
 loginBtn.addEventListener('click', async () => {
-  const email = emailInput.value
-  const password = passwordInput.value
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return alert(error.message);
 
-  const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) return alert(error.message)
+  currentUser = user;
 
-  currentUser = user
-  const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-  currentRole = data?.role || 'customer'
+  const { data, error: roleError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
 
-  showDashboard(currentRole)
-})
+  if(roleError) return alert(roleError.message);
 
-// ----- Show Dashboard -----
+  currentRole = data.role;
+  showDashboard(currentRole);
+});
+
+// ---- Show Dashboard Based on Role ----
 function showDashboard(role) {
-  loginSection.style.display = 'none'
-  dashboard.style.display = 'block'
-  roleTitle.innerText = `Logged in as: ${role}`
-  customerSection.style.display = (role === 'customer') ? 'block' : 'none'
-  fetchTickets()
+  loginSection.style.display = 'none';
+  dashboard.style.display = 'block';
+  roleTitle.innerText = `Logged in as: ${role}`;
+
+  customerSection.style.display = role === 'customer' ? 'block' : 'none';
+  ownerSection.style.display = role === 'owner' ? 'block' : 'none';
+  adminSection.style.display = role === 'admin' ? 'block' : 'none';
+
+  renderTickets(role);
+  if(role === 'admin') renderUsers();
 }
 
-// ----- Submit Ticket -----
+// ---- Submit Ticket ----
 ticketForm?.addEventListener('submit', async e => {
-  e.preventDefault()
-  const title = document.getElementById('title').value
-  const description = document.getElementById('description').value
-  const ticketNumber = `TCK-${Date.now()}`
+  e.preventDefault();
+  const title = document.getElementById('title').value;
+  const description = document.getElementById('description').value;
 
   await supabase.from('tickets').insert([{
     title,
     description,
-    ticket_number: ticketNumber,
+    created_by: currentUser.id,
     status: 'open',
-    created_by: currentUser.id
-  }])
+    assigned_to: null,
+    created_at: new Date()
+  }]);
 
-  ticketForm.reset()
-  fetchTickets()
-})
+  ticketForm.reset();
+  renderTickets('customer');
+});
 
-// ----- Fetch Tickets -----
-async function fetchTickets() {
-  ticketsDiv.innerHTML = ''
-  let query = supabase.from('tickets').select('*').order('created_at', { ascending: false })
-  if (currentRole === 'customer') query = query.eq('created_by', currentUser.id)
+// ---- Render Tickets ----
+async function renderTickets(role) {
+  ticketsDiv.innerHTML = '';
+  ownerTicketsDiv.innerHTML = '';
+  adminTicketsDiv.innerHTML = '';
 
-  const { data, error } = await query
-  if (error) return console.error(error)
+  let { data: tickets, error } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+  if(error) return console.error(error);
 
-  data.forEach(t => {
-    const ticketEl = document.createElement('div')
-    ticketEl.className = 'ticket'
-    ticketEl.innerHTML = `
-      <strong>${t.ticket_number}: ${t.title}</strong><br>
-      Status: ${t.status}<br>
-      Description: ${t.description}<br>
-    `
-    ticketsDiv.appendChild(ticketEl)
-  })
+  tickets.forEach(ticket => {
+    const ticketHTML = `
+      <div class="ticket">
+        <strong>${ticket.title}</strong><br>
+        Status: ${ticket.status}<br>
+        Assigned To: ${ticket.assigned_to || 'None'}<br>
+        Created By: ${ticket.created_by}<br>
+        Description: ${ticket.description}
+      </div>
+    `;
+
+    if(role === 'customer' && ticket.created_by === currentUser.id) ticketsDiv.innerHTML += ticketHTML;
+    if(role === 'owner') ownerTicketsDiv.innerHTML += ticketHTML;
+    if(role === 'admin') adminTicketsDiv.innerHTML += ticketHTML;
+  });
+}
+
+// ---- Render Users for Admin Role ----
+async function renderUsers() {
+  const { data: users, error } = await supabase.from('users').select('*');
+  if(error) return console.error(error);
+
+  usersListDiv.innerHTML = '';
+  users.forEach(user => {
+    usersListDiv.innerHTML += `
+      <div>
+        ${user.email} - ${user.role}
+        <button onclick="changeRole('${user.id}', 'customer')">Customer</button>
+        <button onclick="changeRole('${user.id}', 'owner')">Owner</button>
+        <button onclick="changeRole('${user.id}', 'admin')">Admin</button>
+      </div>
+    `;
+  });
+}
+
+// ---- Change User Role (Admin Only) ----
+window.changeRole = async (userId, newRole) => {
+  const { data, error } = await supabase.from('users').update({ role: newRole }).eq('id', userId);
+  if(error) return alert(error.message);
+  renderUsers();
+  alert("Role updated!");
 }
