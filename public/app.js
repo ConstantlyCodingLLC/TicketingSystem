@@ -1,130 +1,163 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/dist/supabase.min.js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.5/+esm";
 
-// --- Supabase client ---
-const supabase = createClient(
-  "https://jorkdpleywwwmksnirwn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU"
-);
+// 🔹 Use your real Supabase project values
+const SUPABASE_URL = "https://jorkdpleywwwmksnirwn.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU";
 
-// --- Elements ---
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const dashboard = document.getElementById('dashboard');
-const roleTitle = document.getElementById('roleTitle');
-const customerSection = document.getElementById('customerSection');
-const ticketForm = document.getElementById('ticketForm');
-const ticketsDiv = document.getElementById('tickets');
-const ownerSection = document.getElementById('ownerSection');
-const ownerTicketsDiv = document.getElementById('ownerTickets');
-const adminSection = document.getElementById('adminSection');
-const adminTicketsDiv = document.getElementById('adminTickets');
-const usersListDiv = document.getElementById('usersList');
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- Auth ---
-signupBtn.addEventListener('click', async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
-  if(!email || !password) return alert("Enter email & password");
+// Elements
+const loginSection = document.getElementById("loginSection");
+const dashboard = document.getElementById("dashboard");
+const roleTitle = document.getElementById("roleTitle");
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-  if(signUpError) return alert(signUpError.message);
+const customerSection = document.getElementById("customerSection");
+const ownerSection = document.getElementById("ownerSection");
+const adminSection = document.getElementById("adminSection");
 
-  await supabase.from('users').insert([{ id: signUpData.user.id, email, role: 'customer' }]);
-  alert("Sign up complete! Log in.");
-});
+const ticketsDiv = document.getElementById("tickets");
+const ownerTicketsDiv = document.getElementById("ownerTickets");
+const adminTicketsDiv = document.getElementById("adminTickets");
+const usersListDiv = document.getElementById("usersList");
 
-loginBtn.addEventListener('click', async () => {
-  const email = emailInput.value;
-  const password = passwordInput.value;
+// Buttons
+document.getElementById("signupBtn").addEventListener("click", signUp);
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("ticketForm").addEventListener("submit", submitTicket);
+
+// 🔹 Sign Up
+async function signUp() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) return alert("Sign up failed: " + error.message);
+
+  alert("Sign up success! Confirm your email before logging in.");
+}
+
+// 🔹 Login
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if(error) return alert(error.message);
+  if (error) return alert("Login failed: " + error.message);
 
-  loadDashboard();
-});
-
-// --- Load Dashboard ---
-async function loadDashboard() {
-  dashboard.style.display = 'block';
-  const { data: { user } } = await supabase.auth.getUser();
-  const userId = user.id;
-
-  const { data: userRow } = await supabase.from('users').select().eq('id', userId).single();
-  const role = userRow.role;
-  roleTitle.innerText = `Logged in as: ${role}`;
-
-  customerSection.style.display = role === 'customer' ? 'block' : 'none';
-  ownerSection.style.display = role === 'business_owner' ? 'block' : 'none';
-  adminSection.style.display = role === 'admin' ? 'block' : 'none';
-
-  renderTickets(role);
-  if(role === 'admin') renderUsers();
+  alert("Login success!");
+  showDashboard(data.user);
 }
 
-// --- Render Tickets ---
-async function renderTickets(role) {
-  const userId = (await supabase.auth.getUser()).data.user.id;
+// 🔹 Show Dashboard with Role
+async function showDashboard(user) {
+  loginSection.style.display = "none";
+  dashboard.style.display = "block";
 
-  let query = supabase.from('tickets').select('*').order('created_at', { ascending: false });
-  if(role === 'customer') query = query.eq('created_by', userId);
+  // Get role from profiles
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
-  const { data: tickets } = await query;
-  ticketsDiv.innerHTML = '';
-  tickets.forEach(t => {
-    ticketsDiv.innerHTML += `<div class="ticket"><strong>${t.title}</strong> (${t.status})<br>${t.description}</div>`;
-  });
+  let role = "customer"; // default
+  if (data?.role) role = data.role;
 
-  if(role === 'business_owner') renderOwnerTickets();
-  if(role === 'admin') renderAdminTickets();
+  roleTitle.textContent = `Role: ${role}`;
+
+  if (role === "customer") {
+    customerSection.style.display = "block";
+    loadCustomerTickets(user.id);
+  } else if (role === "owner") {
+    ownerSection.style.display = "block";
+    loadOwnerTickets();
+  } else if (role === "admin") {
+    adminSection.style.display = "block";
+    loadAdminTickets();
+    loadUsers();
+  }
 }
 
-async function renderOwnerTickets() {
-  const { data: tickets } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
-  ownerTicketsDiv.innerHTML = '';
-  tickets.forEach(t => {
-    ownerTicketsDiv.innerHTML += `<div>${t.title} - ${t.status}</div>`;
-  });
-}
-
-async function renderAdminTickets() {
-  const { data: tickets } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
-  adminTicketsDiv.innerHTML = '';
-  tickets.forEach(t => {
-    adminTicketsDiv.innerHTML += `<div>${t.title} - ${t.status}</div>`;
-  });
-}
-
-// --- Render Users for Admin ---
-async function renderUsers() {
-  const { data: users } = await supabase.from('users').select('*');
-  usersListDiv.innerHTML = '';
-  users.forEach(u => {
-    usersListDiv.innerHTML += `
-      <div>
-        ${u.email} - Role: ${u.role} 
-        <button onclick="changeRole('${u.id}', 'customer')">Customer</button>
-        <button onclick="changeRole('${u.id}', 'business_owner')">Business Owner</button>
-        <button onclick="changeRole('${u.id}', 'admin')">Admin</button>
-      </div>
-    `;
-  });
-}
-
-// --- Change User Role ---
-window.changeRole = async (userId, role) => {
-  await supabase.from('users').update({ role }).eq('id', userId);
-  renderUsers();
-};
-
-// --- Submit Ticket ---
-ticketForm?.addEventListener('submit', async e => {
+// 🔹 Submit Ticket
+async function submitTicket(e) {
   e.preventDefault();
-  const { data: { user } } = await supabase.auth.getUser();
-  const title = document.getElementById('title').value;
-  const description = document.getElementById('description').value;
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
 
-  await supabase.from('tickets').insert([{ title, description, created_by: user.id }]);
-  ticketForm.reset();
-  renderTickets('customer');
-});
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return alert("You must be logged in to submit a ticket.");
+
+  const { error } = await supabase.from("tickets").insert([
+    { user_id: user.id, title, description, status: "open" },
+  ]);
+
+  if (error) return alert("Error submitting ticket: " + error.message);
+
+  alert("Ticket submitted!");
+  e.target.reset();
+  loadCustomerTickets(user.id);
+}
+
+// 🔹 Load Tickets (Customer)
+async function loadCustomerTickets(userId) {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("*")
+    .eq("user_id", userId)
+    .order("id", { ascending: false });
+
+  if (error) return console.error(error);
+
+  ticketsDiv.innerHTML = data
+    .map((t) => `<div><b>${t.title}</b>: ${t.description} [${t.status}]</div>`)
+    .join("");
+}
+
+// 🔹 Load Tickets (Owner)
+async function loadOwnerTickets() {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) return console.error(error);
+
+  ownerTicketsDiv.innerHTML = data
+    .map((t) => `<div><b>${t.title}</b>: ${t.description} [${t.status}]</div>`)
+    .join("");
+}
+
+// 🔹 Load Tickets (Admin)
+async function loadAdminTickets() {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) return console.error(error);
+
+  adminTicketsDiv.innerHTML = data
+    .map((t) => `<div><b>${t.title}</b>: ${t.description} [${t.status}]</div>`)
+    .join("");
+}
+
+// 🔹 Load Users (Admin)
+async function loadUsers() {
+  const { data, error } = await supabase.from("profiles").select("id, role");
+
+  if (error) return console.error(error);
+
+  usersListDiv.innerHTML = data
+    .map((u) => `<div>User: ${u.id} | Role: ${u.role}</div>`)
+    .join("");
+}
+
+// 🔹 Keep session
+(async () => {
+  const { data } = await supabase.auth.getSession();
+  if (data.session?.user) {
+    showDashboard(data.session.user);
+  }
+})();
