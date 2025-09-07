@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Ticketing System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Dashboard</h1>
+<div id="roleTitle"></div>
+<div id="customerSection" style="display:none;">
+  <h2>Submit a Ticket</h2>
+  <form id="ticketForm">
+    <input type="text" id="title" placeholder="Title" required>
+    <textarea id="description" placeholder="Description" required></textarea>
+    <button type="submit">Submit Ticket</button>
+  </form>
+  <h3>Your Tickets</h3>
+  <div id="customerTickets"></div>
+</div>
+
+<div id="ownerSection" style="display:none;">
+  <h2>Company Tickets</h2>
+  <div id="ownerTickets"></div>
+</div>
+
+<div id="adminSection" style="display:none;">
+  <h2>Admin Controls</h2>
+  <h3>All Tickets</h3>
+  <div id="adminTickets"></div>
+  <h3>Manage Users</h3>
+  <div id="usersList"></div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
