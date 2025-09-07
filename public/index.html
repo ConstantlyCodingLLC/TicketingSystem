@@ -3,17 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ticketing System - Login</title>
+<title>Supabase Ticketing System</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <h1>Ticketing System</h1>
 
 <div id="loginSection">
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
   <button id="loginBtn">Login</button>
   <button id="signupBtn">Sign Up</button>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <h2 id="roleTitle"></h2>
+
+  <!-- Customer -->
+  <div id="customerSection" style="display:none;">
+    <h3>Submit a Ticket</h3>
+    <form id="ticketForm">
+      <input type="text" id="title" placeholder="Title" required>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button type="submit">Submit Ticket</button>
+    </form>
+    <h4>Your Tickets</h4>
+    <div id="customerTickets"></div>
+  </div>
+
+  <!-- Owner -->
+  <div id="ownerSection" style="display:none;">
+    <h3>Business Owner Dashboard</h3>
+    <div id="ownerTickets"></div>
+  </div>
+
+  <!-- Admin -->
+  <div id="adminSection" style="display:none;">
+    <h3>Admin Dashboard</h3>
+    <div id="adminTickets"></div>
+    <h4>Manage Users</h4>
+    <div id="usersList"></div>
+  </div>
 </div>
 
 <script type="module" src="app.js"></script>
