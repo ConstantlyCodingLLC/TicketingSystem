@@ -1,7 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.26.0/+esm";
 
 // 🔑 Replace with your project values
-const SUPABASE_URL = "https://https://jorkdpleywwwmksnirwn.supabase.co";
+const SUPABASE_URL = "'https://jorkdpleywwwmksnirwn.supabase.co'";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvcmtkcGxleXd3d21rc25pcnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjI3MzAsImV4cCI6MjA3MjUzODczMH0.4zYlYinxnJrrDggnX4qS6fwp6_EuAGwXPHYP1hQzuAU";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -92,3 +92,4 @@ async function loadDashboard(user) {
     adminSection.style.display = "block";
   }
 }
+
