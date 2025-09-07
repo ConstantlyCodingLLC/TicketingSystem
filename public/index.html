@@ -1,82 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Supabase Ticketing System</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
-    h1 { margin-bottom: 12px; }
-    input, textarea, button { padding: 10px; margin: 6px 0; width: 100%; max-width: 420px; }
-    button { cursor: pointer; }
-    .row { max-width: 520px; }
-    .muted { color: #666; }
-    .error { color: #b00020; margin-top: 8px; white-space: pre-wrap; }
-    .ok { color: #0a7f2e; margin-top: 8px; }
-    .hidden { display:none; }
-    .section { border: 1px solid #eee; padding: 16px; border-radius: 8px; margin-top: 16px; }
-    .ticket { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; }
-    #roleBadge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef; color:#334; font-size:12px; margin-left:8px; }
-    #loading { display:none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Ticketing System</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<h1>Dashboard</h1>
+<div id="roleTitle"></div>
+<div id="customerSection" style="display:none;">
+  <h2>Submit a Ticket</h2>
+  <form id="ticketForm">
+    <input type="text" id="title" placeholder="Title" required>
+    <textarea id="description" placeholder="Description" required></textarea>
+    <button type="submit">Submit Ticket</button>
+  </form>
+  <h3>Your Tickets</h3>
+  <div id="customerTickets"></div>
+</div>
 
-  <h1>Ticketing System</h1>
+<div id="ownerSection" style="display:none;">
+  <h2>Company Tickets</h2>
+  <div id="ownerTickets"></div>
+</div>
 
-  <!-- Auth / Status -->
-  <div class="row">
-    <div id="loading" class="muted">Loading...</div>
-    <div id="authMessage" class="error"></div>
-    <div id="successMessage" class="ok"></div>
-  </div>
+<div id="adminSection" style="display:none;">
+  <h2>Admin Controls</h2>
+  <h3>All Tickets</h3>
+  <div id="adminTickets"></div>
+  <h3>Manage Users</h3>
+  <div id="usersList"></div>
+</div>
 
-  <!-- Login Section -->
-  <div id="loginSection" class="section">
-    <h2>Login / Sign Up</h2>
-    <input type="email" id="email" placeholder="Email" autocomplete="email" />
-    <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
-    <p class="muted">Tip: If signup is enabled with email confirm, check your inbox after signing up.</p>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="section hidden">
-    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-      <h2 style="margin:0;">Dashboard</h2>
-      <span id="roleBadge" title="Your role"></span>
-    </div>
-    <p class="muted" id="whoami"></p>
-    <button id="logoutBtn">Logout</button>
-
-    <!-- Customer -->
-    <div id="customerSection" class="section hidden">
-      <h3>Submit a Ticket</h3>
-      <form id="ticketForm">
-        <input type="text" id="title" placeholder="Title" required />
-        <textarea id="description" placeholder="Description" rows="4" required></textarea>
-        <button type="submit">Submit Ticket</button>
-      </form>
-      <h4>Your Tickets</h4>
-      <div id="customerTickets"></div>
-    </div>
-
-    <!-- Owner (stubbed for now) -->
-    <div id="ownerSection" class="section hidden">
-      <h3>Owner – Company Tickets</h3>
-      <div id="ownerTickets" class="muted">Coming next: filter by your company.</div>
-    </div>
-
-    <!-- Admin (stubbed for now) -->
-    <div id="adminSection" class="section hidden">
-      <h3>Admin – All Tickets & Users</h3>
-      <div id="adminTickets" class="muted">Coming next: list all tickets.</div>
-      <div id="usersList" class="muted">Coming next: manage user roles.</div>
-    </div>
-  </div>
-
-  <!-- Supabase (ESM) + App -->
-  <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
